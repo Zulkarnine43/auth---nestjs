@@ -8,14 +8,18 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      type: 'mysql' as DatabaseType,
-      host: process.env.MYSQL_HOST,
-      port: parseInt(process.env.MYSQL_PORT, 10),
-      username: process.env.MYSQL_ROOT_USER,
-      password: process.env.MYSQL_ROOT_PASSWORD,
-      database: process.env.MYSQL_DATABASE,
-      autoLoadEntities: true,
+      useFactory: () => ({
+        type: 'mysql' as DatabaseType,
+        host: process.env.MYSQL_HOST,
+        port: parseInt(process.env.MYSQL_PORT, 10),
+        username: process.env.MYSQL_ROOT_USER,
+        password: process.env.MYSQL_ROOT_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+        autoLoadEntities: true, // Automatically load entities from the `entities` array (if set)
+        synchronize: true, // Set to false in production to avoid auto-schema sync
+      }),
     } as TypeOrmModuleAsyncOptions),
     UsersModule
   ],

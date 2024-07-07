@@ -8,7 +8,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @Post()
-  @Version('1')
   async create(@Req() req, @Body() createAdminDto: CreateAdminDto) {
     return await this.usersService.create(createAdminDto);
   }
