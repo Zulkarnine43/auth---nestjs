@@ -1,11 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from "@nestjs/typeorm";
+import { Like, Not, Repository } from "typeorm";
+import { CreateAdminDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from "bcrypt";
+import { User, UserType } from "./entities/user.entity";
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) { }
+
+  async create(createAdminDto: CreateAdminDto) {
+    createAdminDto.password = await bcrypt.hash(createAdminDto.password, 10);
+
+    let newUser;
+    try {
+      newUser = await this.userRepository.save({
+        ...createAdminDto,
+        type: UserType.ADMIN,
+      });
+    } catch (e) {
+      const errorMessage = {
+        statusCode: 400,
+        success: false,
+        message: "Unable to create user",
+        error: {},
+      };
+      throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const { password, ...result } = newUser;
+
+    return result;
   }
 
   findAll() {
