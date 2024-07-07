@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseType } from 'typeorm';
+import { knexConfig } from 'knex-config';
+import { KnexModule } from 'nest-knexjs';
 import { TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,6 +23,7 @@ import { UsersModule } from './users/users.module';
         synchronize: true, // Set to false in production to avoid auto-schema sync
       }),
     } as TypeOrmModuleAsyncOptions),
+    KnexModule.forRoot(knexConfig),
     UsersModule
   ],
   controllers: [AppController],

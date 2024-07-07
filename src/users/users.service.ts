@@ -1,16 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, Not, Repository } from "typeorm";
-import { CreateAdminDto } from './dto/create-user.dto';
+import { CreateAdminDto, CreateCustomerDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from "bcrypt";
 import { User, UserType } from "./entities/user.entity";
+import { Knex } from 'knex';
+import { InjectConnection } from 'nest-knexjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectConnection() private readonly knex: Knex,
   ) { }
 
   async create(createAdminDto: CreateAdminDto) {
@@ -23,6 +26,35 @@ export class UsersService {
         type: UserType.ADMIN,
       });
     } catch (e) {
+      const errorMessage = {
+        statusCode: 400,
+        success: false,
+        message: "Unable to create user",
+        error: {},
+      };
+      throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const { password, ...result } = newUser;
+
+    return result;
+  }
+
+  async createCustomer(createCustomerDto: CreateCustomerDto) {
+    createCustomerDto.password = await bcrypt.hash(createCustomerDto.password, 10);
+
+    let newUser;
+    try {
+      newUser = await this.knex.table('user').insert({
+        ...createCustomerDto,
+        type: UserType.CUSTOMER,
+      });
+      if(newUser){
+        const id = newUser[0];
+        newUser = await this.knex('user').where('id', id).first(); // Resolves to any
+      }
+    } catch (e) {
+      console.error('Error creating user:', e);
       const errorMessage = {
         statusCode: 400,
         success: false,

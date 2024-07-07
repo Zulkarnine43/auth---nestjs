@@ -25,3 +25,25 @@ export class CreateAdminDto {
   @IsNotEmpty()
   password: string;
 }
+
+export class CreateCustomerDto {
+  @IsNotEmpty()
+  first_name: string;
+
+  @IsNotEmpty()
+  last_name: string;
+
+  @IsOptional()
+  phone: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender: Gender;
+
+  @IsNotEmpty()
+  password: string;
+}
