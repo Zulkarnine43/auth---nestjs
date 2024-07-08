@@ -1,13 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Version, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Version, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto, CreateCustomerDto } from './dto/create-user.dto';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { CustomerLoginDto } from './dto/customer-login.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
+
+  @Get('validate-token')
+  @UseGuards(JwtAuthGuard)
+  async validateToken(@Req() req) {
+    const user = req.user;
+    return user;
+  }
 
   @Post('admin')
   async create(@Req() req, @Body() createAdminDto: CreateAdminDto) {

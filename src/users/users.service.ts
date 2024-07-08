@@ -261,6 +261,28 @@ export class UsersService {
     return user;
   }
 
+  async findByPayload(payload) {
+    let user;
+    if (payload.type === 'admin') {
+      user = await this.findOneByEmail(payload.email);
+    } else if (payload.type === 'customer') {
+      let userName;
+      if (payload?.phone !== null) {
+        userName = payload?.phone;
+      } else if (payload?.email !== null) {
+        userName = payload?.email;
+      }
+      user = await this.findOneByPhone(userName);
+    }
+
+    if (user) {
+      const { password, ...result } = user;
+      return result;
+    }
+
+    return null;
+  }
+
   findAll() {
     return `This action returns all users`;
   }
