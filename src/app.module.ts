@@ -7,6 +7,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './schema/user.schema';
+import * as dotenv from 'dotenv';
 
 @Module({
   imports: [
@@ -24,6 +27,8 @@ import { UsersModule } from './users/users.module';
       }),
     } as TypeOrmModuleAsyncOptions),
     KnexModule.forRoot(knexConfig),
+    MongooseModule.forRoot(`${process.env.MONGODB_URI}`),
+    MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
     UsersModule,
   ],
   controllers: [AppController],

@@ -5,6 +5,8 @@ import { UsersController } from './users.controller';
 import { User } from './entities/user.entity';
 import { JwtModule, JwtModuleAsyncOptions } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { UserSchema } from 'src/schema/user.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { JwtStrategy } from './jwt.strategy';
         signOptions: { expiresIn: '3y' },
       }),
     } as JwtModuleAsyncOptions),
+    MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
   ],
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy],

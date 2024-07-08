@@ -61,6 +61,12 @@ export class UsersController {
     return this.usersService.customerLogin(customerLoginDto);
   }
 
+
+  @Post('customer/mongo')
+  async createMongoCustomer(@Req() req, @Body() createCustomerDto: CreateCustomerDto) {
+    return await this.usersService.createMongoCustomer(createCustomerDto);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);

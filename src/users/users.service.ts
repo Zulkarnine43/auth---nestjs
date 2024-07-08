@@ -6,12 +6,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from "bcrypt";
 import { User, UserType } from "./entities/user.entity";
 import { Knex } from 'knex';
-import { InjectConnection } from 'nest-knexjs';
+// import { InjectConnection } from 'nest-knexjs';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CustomerLoginDto } from './dto/customer-login.dto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
+import { UserDocument } from 'src/schema/user.schema';
 
 
 @Injectable()
@@ -21,6 +24,8 @@ export class UsersService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     @InjectConnection() private readonly knex: Knex,
+    @InjectConnection() private connection: Connection,
+    @InjectModel('USERS') private readonly userModel: Model<UserDocument>,
   ) { }
 
   async create(
@@ -168,6 +173,43 @@ export class UsersService {
         const id = newUser[0];
         newUser = await this.knex('user').where('id', id).first(); // Resolves to any
       }
+    } catch (e) {
+      console.error('Error creating user:', e);
+      const errorMessage = {
+        statusCode: 400,
+        success: false,
+        message: "Unable to create user",
+        error: {},
+      };
+      throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    const { password, ...result } = newUser;
+
+    return result;
+  }
+
+  async createMongoCustomer(createCustomerDto: CreateCustomerDto) {
+    createCustomerDto.password = await bcrypt.hash(createCustomerDto.password, 10);
+
+    let newUser;
+    try {
+      // one way
+      // const newData = new this.userModel(createCustomerDto);
+      // return (await newData.save())?.toJSON();
+
+      // another way
+      // return await this.userModel.insertMany(createCustomerDto);
+
+      // another
+      const newData = await this.connection.db
+        .collection('users')
+        .insertOne(createCustomerDto);
+
+      const data = await this.connection.db
+        .collection('users')
+        .findOne({ _id: newData.insertedId });
+      return data
     } catch (e) {
       console.error('Error creating user:', e);
       const errorMessage = {
