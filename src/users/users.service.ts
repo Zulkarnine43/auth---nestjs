@@ -9,6 +9,7 @@ import { Knex } from 'knex';
 import { InjectConnection } from 'nest-knexjs';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { CustomerLoginDto } from './dto/customer-login.dto';
 
 @Injectable()
 export class UsersService {
@@ -157,6 +158,107 @@ export class UsersService {
     const { password, ...result } = newUser;
 
     return result;
+  }
+
+  async customerLogin(loginCustomerDto: CustomerLoginDto) {
+    try {
+      // check email or phone number
+      const isEmail = await this.isValidEmail(loginCustomerDto.phone);
+
+      if (!isEmail) {
+        const phoneNumber = await this.checkPhoneNumberValidation(loginCustomerDto.phone);
+        if (!phoneNumber) {
+          throw new HttpException('Invalid phone number', HttpStatus.BAD_REQUEST);
+        }
+
+        // formate phone number
+        const phoneNumberFormate = await this.formatePhoneNumber(phoneNumber);
+        if (!phoneNumberFormate) {
+          throw new HttpException('Invalid phone number', HttpStatus.BAD_REQUEST);
+        }
+        loginCustomerDto.phone = phoneNumberFormate;
+      }
+
+      let user;
+      user = await this.findOneByPhone(loginCustomerDto.phone);
+
+      if (!user) {
+        const errorMessage = {
+          statusCode: 400,
+          success: false,
+          message: 'User Not Found',
+          error: {},
+        };
+        throw new HttpException(errorMessage, HttpStatus.NOT_FOUND);
+      }
+
+      return await this.login(user);
+    } catch (error) {
+      throw new HttpException('Something went wrong', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async isValidEmail(email) {
+    // Regular expression for validating an email
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
+
+  // validation bd phone number
+  async checkPhoneNumberValidation(phoneNumberString) {
+    const cleaned = ('' + phoneNumberString).replace(/\D/g, '');
+    const match = cleaned.match(/^(\+88|88)?(01[3-9]\d{8})$/);
+    if (match) {
+      const intlCode = match[1] ? '88' : '';
+      return [intlCode, match[2]].join('');
+    }
+    return null;
+  };
+
+  async formatePhoneNumber(phoneNumber) {
+    // Remove any spaces or hyphens in the number
+    phoneNumber = phoneNumber.replace(/\s+/g, '').replace(/-/g, '');
+
+    // Check if the number starts with '01' (common in local Bangladeshi numbers)
+    if (phoneNumber.startsWith('01')) {
+      return '88' + phoneNumber;
+    }
+
+    // Check if the number starts with '+88'
+    if (phoneNumber.startsWith('+8801')) {
+      // Remove the '+' sign and return as is
+      return '88' + phoneNumber.slice(3);
+    }
+
+    // Check if the number starts with '8801'
+    if (phoneNumber.startsWith('8801')) {
+      return phoneNumber;
+    }
+  };
+
+  async findOneByPhone(phone) {
+    // Get user by phone
+    let user;
+    try {
+      user = await this.userRepository
+        .createQueryBuilder()
+        .where('phone = :phone OR email = :email', {
+          phone,
+          email: phone,
+        })
+        .andWhere('type = :type', { type: UserType.CUSTOMER })
+        .getOne();
+    } catch (e) {
+      console.log(e);
+      const errorMessage = {
+        statusCode: 400,
+        success: false,
+        message: 'Unable to find user',
+        error: {},
+      };
+      throw new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return user;
   }
 
   findAll() {

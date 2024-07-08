@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto, CreateCustomerDto } from './dto/create-user.dto';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { CustomerLoginDto } from './dto/customer-login.dto';
 
 @Controller('users')
 export class UsersController {
@@ -22,6 +23,12 @@ export class UsersController {
   @Post('customer')
   async createCustomer(@Req() req, @Body() createCustomerDto: CreateCustomerDto) {
     return await this.usersService.createCustomer(createCustomerDto);
+  }
+
+  @Post('customer/login')
+  @Version('1')
+  customerLogin(@Body() customerLoginDto: CustomerLoginDto) {
+    return this.usersService.customerLogin(customerLoginDto);
   }
 
   @Get()
