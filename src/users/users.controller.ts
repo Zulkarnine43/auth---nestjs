@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Version, Req } from 
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto, CreateCustomerDto } from './dto/create-user.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
 
 @Controller('users')
 export class UsersController {
@@ -10,6 +11,12 @@ export class UsersController {
   @Post('admin')
   async create(@Req() req, @Body() createAdminDto: CreateAdminDto) {
     return await this.usersService.create(createAdminDto);
+  }
+
+  @Post('admin/login')
+  @Version('1')
+  adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+    return this.usersService.adminLogin(adminLoginDto);
   }
 
   @Post('customer')

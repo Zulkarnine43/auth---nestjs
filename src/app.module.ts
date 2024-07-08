@@ -24,7 +24,7 @@ import { UsersModule } from './users/users.module';
       }),
     } as TypeOrmModuleAsyncOptions),
     KnexModule.forRoot(knexConfig),
-    UsersModule
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
