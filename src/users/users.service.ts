@@ -273,6 +273,7 @@ export class UsersService {
         userName = payload?.email;
       }
       user = await this.findOneByPhone(userName);
+      return user
     }
 
     if (user) {
@@ -283,8 +284,72 @@ export class UsersService {
     return null;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(perPage = 10, currentPage = 0, search = null, status = null) {
+    let filter;
+    let andFilter;
+
+    if (status) {
+      andFilter = { type: UserType.ADMIN, status: status };
+    } else {
+      andFilter = { type: UserType.ADMIN };
+    }
+
+    if (search) {
+      filter = [
+        {
+          ...andFilter,
+          firstName: Like("%" + search + "%"),
+        },
+        {
+          ...andFilter,
+          lastName: Like("%" + search + "%"),
+        },
+        {
+          ...andFilter,
+          email: Like("%" + search + "%"),
+        },
+        {
+          ...andFilter,
+          phone: Like("%" + search + "%"),
+        },
+      ];
+    } else {
+      filter = [
+        {
+          ...andFilter,
+        },
+      ];
+    }
+
+    const [user, total] = await this.userRepository.findAndCount({
+      where: filter,
+      select: [
+        "id",
+        "avatar",
+        "firstName",
+        "lastName",
+        "type",
+        "adminType",
+        "email",
+        "phone",
+        "gender",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "deletedAt",
+      ],
+      order: { createdAt: "DESC" },
+      take: perPage,
+      skip: currentPage * perPage,
+    });
+
+    return {
+      data: user,
+      perPage: perPage,
+      currentPage: currentPage + 1,
+      totalPage: Math.ceil(total / perPage),
+      totalResult: total,
+    };
   }
 
   findOne(id: number) {
