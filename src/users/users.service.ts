@@ -10,6 +10,9 @@ import { InjectConnection } from 'nest-knexjs';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CustomerLoginDto } from './dto/customer-login.dto';
+import * as fs from 'fs';
+import * as path from 'path';
+
 
 @Injectable()
 export class UsersService {
@@ -20,7 +23,28 @@ export class UsersService {
     @InjectConnection() private readonly knex: Knex,
   ) { }
 
-  async create(createAdminDto: CreateAdminDto) {
+  async create(
+    createAdminDto: CreateAdminDto,
+    avatar: Express.Multer.File,
+  ) {
+    let imagePath = null;
+    if (avatar) {
+      const extArray = avatar.mimetype.split('/');
+      const extension = extArray[extArray.length - 1];
+      const fileName = `${Date.now()}-${createAdminDto.firstName}.${extension}`;
+
+      const uploadPath = path.join(__dirname, '../../..', 'public', 'uploads', fileName);
+
+      // Ensure the upload directory exists
+      fs.mkdirSync(path.dirname(uploadPath), { recursive: true });
+
+      // Write the file to the upload directory
+      fs.writeFileSync(uploadPath, avatar.buffer);
+
+      imagePath = `public/uploads/${fileName}`;
+    }
+    createAdminDto.avatar = imagePath;
+
     createAdminDto.password = await bcrypt.hash(createAdminDto.password, 10);
 
     let newUser;

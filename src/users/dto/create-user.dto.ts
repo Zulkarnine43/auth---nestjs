@@ -12,6 +12,9 @@ export class CreateAdminDto {
   phone: string;
 
   @IsOptional()
+  avatar: string;
+
+  @IsOptional()
   adminType: string;
 
   @IsNotEmpty()

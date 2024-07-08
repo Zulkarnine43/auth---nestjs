@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Version, Req, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Version, Req, UseGuards, Query, UseInterceptors, ValidationPipe, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto, CreateCustomerDto } from './dto/create-user.dto';
@@ -21,8 +22,14 @@ export class UsersController {
   }
 
   @Post('admin')
-  async create(@Req() req, @Body() createAdminDto: CreateAdminDto) {
-    return await this.usersService.create(createAdminDto);
+  @UseInterceptors(FileInterceptor('avatar'))
+  async create(
+    @Req() req,
+    @Body(new ValidationPipe({ whitelist: true }))
+    createAdminDto: CreateAdminDto,
+    @UploadedFile() avatar: Express.Multer.File,
+  ) {
+    return await this.usersService.create(createAdminDto, avatar);
   }
 
   @Post('admin/login')
