@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schema/user.schema';
 import * as dotenv from 'dotenv';
+import { ChatGateway } from './chat.gateway';
 
 @Module({
   imports: [
@@ -32,6 +33,6 @@ import * as dotenv from 'dotenv';
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ChatGateway],
 })
 export class AppModule { }
