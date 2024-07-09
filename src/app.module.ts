@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schema/user.schema';
 import * as dotenv from 'dotenv';
 import { ChatGateway } from './chat.gateway';
+import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ChatGateway } from './chat.gateway';
     MongooseModule.forRoot(`${process.env.MONGODB_URI}`),
     MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
     UsersModule,
+    RabbitmqModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],
