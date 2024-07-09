@@ -1,29 +1,23 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html class="no-js" lang="">
+
 <head>
-  <title>Socket.IO Test</title>
-  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script> <!-- Ensure the version matches -->
-  <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-      const socket = io('http://localhost:3000');
-
-      socket.on('connect', () => {
-        console.log('Connected to server');
-      });
-
-      socket.on('message', (message) => {
-        console.log('Message from server:', message);
-      });
-
-      document.getElementById('sendButton').addEventListener('click', () => {
-        const message = document.getElementById('messageInput').value;
-        socket.emit('message', message);
-      });
-    });
-  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+
 <body>
-  <input type="text" id="messageInput" placeholder="Enter message">
-  <button id="sendButton">Send</button>
+  <div>
+    <ul id="messages"></ul>
+  </div>
+
+  <div>
+    <input id="message" type="text" />
+    <button onclick="handleSubmitNewMessage()">Submit</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="./chat-socket.js"></script>
 </body>
+
 </html>
