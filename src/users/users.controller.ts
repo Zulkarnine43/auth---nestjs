@@ -9,7 +9,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserTypeGuard } from 'src/common/guards/user-type.guard';
 import { UserTypes } from 'src/common/decorators/user-type.decorator';
 import { UserType } from './entities/user.entity';
-import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
+import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 
 @Controller('users')
 export class UsersController {
@@ -75,6 +75,17 @@ export class UsersController {
   })
   public async calculateDeliveryCharge(msg) {
     console.log('Incoming payload: ', msg);
+    return msg
+  }
+
+
+  @RabbitSubscribe({
+    exchange: 'order',
+    routingKey: 'order_created_routing_key',
+    queue: 'order_created_promotion_queue',
+  })
+  public async decreaseQuantity(msg) {
+    console.log('Incoming payload2: ', msg);
     return msg
   }
 

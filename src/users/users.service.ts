@@ -260,14 +260,29 @@ export class UsersService {
         throw new HttpException(errorMessage, HttpStatus.NOT_FOUND);
       }
 
-      const result = await this.rabbitmqService.request(
-        'delivery_charge_address_book',
-        'delivery_charge_calculation_routing_key',
-        { ...user },
-        5000,
-      );
+      // let result;
+      // try {
+      //   result = await this.rabbitmqService.publish(
+      //     'order',
+      //     'order_created_routing_key',
+      //     user,
+      //   );
+      // } catch (e) {
+      //   console.log(e);
+      // }
 
-      console.log('result', result);
+      // try {
+      //   result = await this.rabbitmqService.request(
+      //     'delivery_charge_address_book',
+      //     'delivery_charge_calculation_routing_key',
+      //     { ...user },
+      //     5000,
+      //   );
+      // } catch (e) {
+      //   console.log(e);
+      // }
+
+      // console.log('result', result);
 
       return await this.login(user);
     } catch (error) {

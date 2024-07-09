@@ -12,6 +12,10 @@ dotenv.config();
           name: 'delivery_charge_address_book',
           type: 'topic',
         },
+        {
+          name: 'order',
+          type: 'topic',
+        },
       ],
       uri: process.env.RMQ_URL,
       connectionInitOptions: {
