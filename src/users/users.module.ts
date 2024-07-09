@@ -7,9 +7,11 @@ import { JwtModule, JwtModuleAsyncOptions } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { UserSchema } from 'src/schema/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RabbitmqModule } from 'src/rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
+    RabbitmqModule,
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       useFactory: async () => ({

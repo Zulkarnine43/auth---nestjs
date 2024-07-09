@@ -9,6 +9,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserTypeGuard } from 'src/common/guards/user-type.guard';
 import { UserTypes } from 'src/common/decorators/user-type.decorator';
 import { UserType } from './entities/user.entity';
+import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 
 @Controller('users')
 export class UsersController {
@@ -66,6 +67,17 @@ export class UsersController {
   async createMongoCustomer(@Req() req, @Body() createCustomerDto: CreateCustomerDto) {
     return await this.usersService.createMongoCustomer(createCustomerDto);
   }
+
+  @RabbitRPC({
+    exchange: 'delivery_charge_address_book',
+    routingKey: 'delivery_charge_calculation_routing_key',
+    queue: 'delivery-charge-calculation-address-book',
+  })
+  public async calculateDeliveryCharge(msg) {
+    console.log('Incoming payload: ', msg);
+    return msg
+  }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

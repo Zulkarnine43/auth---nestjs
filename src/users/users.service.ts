@@ -15,6 +15,7 @@ import * as path from 'path';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user.schema';
+import { RabbitmqService } from 'src/rabbitmq/rabbitmq.service';
 
 
 @Injectable()
@@ -26,6 +27,7 @@ export class UsersService {
     @InjectConnection() private readonly knex: Knex,
     @InjectConnection() private connection: Connection,
     @InjectModel('USERS') private readonly userModel: Model<UserDocument>,
+    private readonly rabbitmqService: RabbitmqService,
   ) { }
 
   async create(
@@ -257,6 +259,15 @@ export class UsersService {
         };
         throw new HttpException(errorMessage, HttpStatus.NOT_FOUND);
       }
+
+      const result = await this.rabbitmqService.request(
+        'delivery_charge_address_book',
+        'delivery_charge_calculation_routing_key',
+        { ...user },
+        5000,
+      );
+
+      console.log('result', result);
 
       return await this.login(user);
     } catch (error) {

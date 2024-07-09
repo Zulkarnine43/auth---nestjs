@@ -8,30 +8,10 @@ dotenv.config();
   imports: [
     RabbitMQModule.forRoot(RabbitMQModule, {
       exchanges: [
-        // {
-        //   name: 'shop',
-        //   type: 'topic',
-        // },
-        // {
-        //   name: 'product',
-        //   type: 'topic',
-        // },
-        // {
-        //   name: 'order',
-        //   type: 'topic',
-        // },
-        // {
-        //   name: 'catalog',
-        //   type: 'topic',
-        // },
-        // {
-        //   name: 'promotion',
-        //   type: 'topic',
-        // },
-        // {
-        //   name: 'bulk-service',
-        //   type: 'topic',
-        // },
+        {
+          name: 'delivery_charge_address_book',
+          type: 'topic',
+        },
       ],
       uri: process.env.RMQ_URL,
       connectionInitOptions: {
@@ -43,4 +23,4 @@ dotenv.config();
   exports: [RabbitMQModule, RabbitmqService],
   providers: [RabbitmqService],
 })
-export class RabbitmqModule {}
+export class RabbitmqModule { }
