@@ -16,6 +16,8 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import { UserDocument } from 'src/schema/user.schema';
 import { RabbitmqService } from 'src/rabbitmq/rabbitmq.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 
 @Injectable()
@@ -28,6 +30,7 @@ export class UsersService {
     @InjectConnection() private connection: Connection,
     @InjectModel('USERS') private readonly userModel: Model<UserDocument>,
     private readonly rabbitmqService: RabbitmqService,
+    @InjectQueue('user') private readonly userQueue: Queue,
   ) { }
 
   async create(
@@ -444,8 +447,12 @@ export class UsersService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    return id
+    const data = {
+      id: id
+    }
+    return await this.userQueue.add('user-get-by-id', data, { delay: 1000 });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

@@ -8,10 +8,15 @@ import { JwtStrategy } from './jwt.strategy';
 import { UserSchema } from 'src/schema/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RabbitmqModule } from 'src/rabbitmq/rabbitmq.module';
+import { BullModule } from '@nestjs/bull';
+import { UserProcessor } from './user.processor';
 
 @Module({
   imports: [
     RabbitmqModule,
+    BullModule.registerQueue({
+      name: 'user',
+    }),
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       useFactory: async () => ({
@@ -22,7 +27,7 @@ import { RabbitmqModule } from 'src/rabbitmq/rabbitmq.module';
     MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
   ],
   controllers: [UsersController],
-  providers: [UsersService, JwtStrategy],
+  providers: [UsersService, JwtStrategy, UserProcessor],
   exports: [UsersService]
 })
 export class UsersModule { }

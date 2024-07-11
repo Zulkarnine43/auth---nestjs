@@ -12,6 +12,7 @@ import { User, UserSchema } from './schema/user.schema';
 import * as dotenv from 'dotenv';
 import { ChatGateway } from './chat.gateway';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -29,6 +30,13 @@ import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
       }),
     } as TypeOrmModuleAsyncOptions),
     KnexModule.forRoot(knexConfig),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.SERVER_HOST,
+        port: Number(process.env.REDIS_PORT),
+        // password: process.env.REDIS_PASSWORD,
+      },
+    }),
     MongooseModule.forRoot(`${process.env.MONGODB_URI}`),
     MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
     UsersModule,
