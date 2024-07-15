@@ -13,6 +13,8 @@ import * as dotenv from 'dotenv';
 import { ChatGateway } from './chat.gateway';
 import { RabbitmqModule } from './rabbitmq/rabbitmq.module';
 import { BullModule } from '@nestjs/bull';
+import { SearchModule } from './search/search.module';
+import { Product, ProductSchema } from './schema/product.schema';
 
 @Module({
   imports: [
@@ -39,8 +41,10 @@ import { BullModule } from '@nestjs/bull';
     }),
     MongooseModule.forRoot(`${process.env.MONGODB_URI}`),
     MongooseModule.forFeature([{ name: 'USERS', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'PRODUCTS', schema: ProductSchema }]),
     UsersModule,
     RabbitmqModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],
