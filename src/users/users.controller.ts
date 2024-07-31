@@ -9,9 +9,12 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserTypeGuard } from 'src/common/guards/user-type.guard';
 import { UserTypes } from 'src/common/decorators/user-type.decorator';
 import { UserType } from './entities/user.entity';
+import { ApiTags } from '@nestjs/swagger';
 import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 
+@ApiTags('users')
 @Controller('users')
+
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
@@ -41,8 +44,8 @@ export class UsersController {
 
   @Get('admin/list')
   @Version('1')
-  @UserTypes(UserType.ADMIN)
-  @UseGuards(JwtAuthGuard, UserTypeGuard)
+  // @UserTypes(UserType.ADMIN)
+  // @UseGuards(JwtAuthGuard, UserTypeGuard)
   async findAll(@Req() req, @Query() query) {
     return await this.usersService.findAll(
       query.perPage && parseInt(query.perPage),
