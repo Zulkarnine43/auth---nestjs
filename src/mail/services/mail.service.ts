@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as CryptoJS from 'crypto-js';
-
 import * as fs from 'fs';
 import * as Handlebars from 'handlebars';
 import { Knex } from 'knex';
@@ -9,14 +8,17 @@ import { InjectConnection } from 'nest-knexjs';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { MailjetService } from './mailjet.service';
 import { SMTPService } from './smtp.service';
+import * as puppeteer from 'puppeteer';
+import { SendgridService } from './sendgrid.service';
 
 @Injectable()
 export class MailService {
   constructor(
+    @InjectConnection() private readonly knex: Knex,
     private readonly mailjet: MailjetService,
     private readonly smtpService: SMTPService,
-    @InjectConnection() private readonly knex: Knex,
-  ) {}
+    private sendgridService: SendgridService,
+  ) { }
   async sendTestMail(data: any) {
     // const mailData = {
     //   Messages: [
@@ -302,5 +304,77 @@ export class MailService {
     } catch (error) {
       console.log('error', error);
     }
+  }
+
+  async sendEmail(email: string, otp: number) {
+    const templatePath = './template/email.hbs';
+    const source = fs.readFileSync(templatePath, 'utf-8');
+
+    const template = Handlebars.compile(source);
+    const templateHtml = template({ otp });
+
+    try {
+      let pdfBuffer;
+
+      // Use Puppeteer to render the HTML to PDF buffer
+      const browser = await puppeteer.launch({
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser',
+        args: ['--no-sandbox', '--disabled-setupid-sandbox'],
+      });
+      const page = await browser.newPage();
+      await page.setContent(templateHtml);
+      pdfBuffer = await page.pdf({
+        format: 'A4',
+        margin: {
+          top: '96px',
+          bottom: '96px',
+          left: '96px',
+          right: '96px',
+        },
+      }); // adjust format as needed
+
+      await browser.close();
+      console.log('pdfBuffer', pdfBuffer);
+
+      const mail = {
+        to: email,
+        subject: 'Greeting Message from NestJS Sendgrid',
+        from: {
+          email: process.env.SENDER_EMAIL,
+          name: process.env.SENDER_NAME,
+        },
+        text: 'Hello World from NestJS Sendgrid by service',
+        attachments: [
+          {
+            content: pdfBuffer.toString('base64'),
+            filename: 'attachment.pdf',
+            type: 'application/pdf',
+            disposition: 'attachment',
+          },
+        ],
+      };
+      return await this.sendgridService.sendEmail(mail);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  // make html to pdf buffer for email attachment
+  async makePdfBuffer(templateHtml, pageSettings) {
+    let pdfBuffer;
+
+    // Use Puppeteer to render the HTML to PDF buffer
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: '/usr/bin/chromium-browser',
+      args: ['--no-sandbox', '--disabled-setupid-sandbox'],
+    });
+    const page = await browser.newPage();
+    await page.setContent(templateHtml);
+    pdfBuffer = await page.pdf(pageSettings); // adjust format as needed
+
+    await browser.close();
+    return pdfBuffer;
   }
 }
