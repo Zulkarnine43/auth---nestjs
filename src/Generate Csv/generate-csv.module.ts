@@ -5,11 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GenerateCsvController } from './controllers/generate-csv.controller';
 import { GenerateCsvService } from './services/generate-csv.service';
 import { User } from 'src/users/entities/user.entity';
+import { AwsS3Service } from 'src/awss3.service';
 
 @Module({
   // imports: [TypeOrmModule.forFeature([Order, Product, User])],
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [GenerateCsvController],
-  providers: [GenerateCsvService],
+  providers: [GenerateCsvService, AwsS3Service],
 })
 export class GenerateCsvModule {}
