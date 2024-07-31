@@ -16,6 +16,7 @@ import { BullModule } from '@nestjs/bull';
 import { SearchModule } from './search/search.module';
 import { Product, ProductSchema } from './schema/product.schema';
 import { GenerateCsvModule } from './Generate Csv/generate-csv.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { GenerateCsvModule } from './Generate Csv/generate-csv.module';
     RabbitmqModule,
     SearchModule,
     GenerateCsvModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway],
