@@ -1,0 +1,98 @@
+version: '3.8'
+services:
+  dev:
+    container_name: 'auth-backend-api'
+    build:
+      context: .
+    command: sh -c "npm run start:dev"
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+      - ${APP_DEBUG_PORT}:9229
+    networks:
+      - nestjs-network
+    depends_on:
+      - mysql
+      - cache
+      - mongodb
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-auth
+    command: mongod --port ${MONGODB_PORT:-27017}
+    volumes:
+      - ./mongo_data:/data/db
+      - ./docker-entrypoint-initdb.d/mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+      TZ: 'Asia/Dhaka'
+      MONGO_USERNAME: ${MONGODB_USER}
+      MONGO_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - ${MONGODB_PORT:-27017}:${MONGODB_PORT:-27017}
+    networks:
+      - nestjs-network
+    restart: always
+
+  mysql:
+    image: mariadb
+    container_name: mysql-auth
+    restart: always
+    networks:
+      - nestjs-network
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_USER=${MYSQL_ROOT_USER}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${MYSQL_PORT:-3306}
+      - MYSQL_UNIX_PORT=${MYSQL_PORT:-3306}
+      - TZ=Asia/Dhaka
+    ports:
+      - '${MYSQL_PORT:-3306}:${MYSQL_PORT:-3306}'
+    volumes:
+      - ./mysql_data/db:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-auth
+    links:
+      - mysql
+    environment:
+      MYSQL_USERNAME: ${MYSQL_ROOT_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_HOST: mysql
+      PMA_PORT: ${MYSQL_PORT:-3306}
+      UPLOAD_LIMIT: 204800k
+    depends_on:
+      - mysql
+    restart: always
+    networks:
+      - nestjs-network
+    ports:
+      - ${PHPMYADMIN_PORT:-8085}:80
+  cache:
+    image: redis:6.2-alpine
+    container_name: redis-auth
+    restart: always
+    networks:
+      - nestjs-network
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./cache:/data
+
+networks:
+  nestjs-network:
+    driver: bridge
+# volumes:
+#   mongo_data:
+#     driver: local
+#   mysql_data:
+#     driver: local
+#   cache:
+#     driver: local
