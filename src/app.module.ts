@@ -17,6 +17,8 @@ import { SearchModule } from './search/search.module';
 import { Product, ProductSchema } from './schema/product.schema';
 import { GenerateCsvModule } from './Generate Csv/generate-csv.module';
 import { MailModule } from './mail/mail.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { TestConsumer } from './test.consumer';
 
 @Module({
   imports: [
@@ -49,8 +51,9 @@ import { MailModule } from './mail/mail.module';
     SearchModule,
     GenerateCsvModule,
     MailModule,
+    KafkaModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ChatGateway],
+  providers: [AppService, ChatGateway, TestConsumer],
 })
 export class AppModule { }
